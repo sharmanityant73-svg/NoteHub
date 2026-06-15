@@ -10,8 +10,7 @@
 ---
 
 ##  Live Demo
- **[Coming Soon - Deploying on Render]**
-
+ **[Live Demo](https://notehub-jpqb.onrender.com/)**
 ---
 
 ##  Features
