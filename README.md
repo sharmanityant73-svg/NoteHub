@@ -10,7 +10,7 @@
 ---
 
 ##  Live Demo
-🔗 **[Coming Soon - Deploying on Render]**
+ **[Coming Soon - Deploying on Render]**
 
 ---
 
