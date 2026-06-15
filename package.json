@@ -1,0 +1,25 @@
+{
+  "name": "notehub",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.13.6",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.1",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "groq-sdk": "^1.1.1",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.19.2",
+    "natural": "^8.1.1"
+  }
+}

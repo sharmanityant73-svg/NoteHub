@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= note.title %> — NoteHub</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <style>
+        /* Two-column workspace */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            max-width: 1280px;
+            margin: 30px auto;
+            padding: 0 24px 60px;
+            align-items: start;
+        }
+
+        /* Editor panel */
+        .editor-panel {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px;
+        }
+
+        .editor-panel h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        #editor { height: 340px; border-radius: 0 0 8px 8px; }
+        .ql-toolbar { border-radius: 8px 8px 0 0; }
+
+        .save-btn {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            border: none;
+            padding: 11px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+
+        /* Tags section */
+        .tags-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .tags-section h3 { font-size: 15px; font-weight: 600; color: #374151; margin-bottom: 12px; }
+
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            min-height: 36px;
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #ede9fe;
+            color: #5b21b6;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tag-chip .remove-tag {
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1;
+            color: #7c3aed;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            box-shadow: none;
+            transform: none;
+        }
+        .tag-chip .remove-tag:hover { transform: none; box-shadow: none; }
+
+        .tag-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-input-row input {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+        .tag-input-row input:focus { border-color: #7c3aed; }
+
+        .tag-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: none;
+        }
+        .tag-btn:hover { transform: none; }
+
+        .tag-btn-add { background: #ede9fe; color: #5b21b6; }
+        .tag-btn-add:hover { background: #ddd6fe; }
+        .tag-btn-ai { background: linear-gradient(135deg, #6c5ce7, #8b5cf6); color: #fff; }
+        .tag-btn-ai:hover { opacity: 0.9; }
+        .tag-btn-save { background: #d1fae5; color: #065f46; }
+        .tag-btn-save:hover { background: #a7f3d0; }
+
+        /* AI panel */
+        .ai-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ai-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .ai-card-header {
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #1e1e3f, #2d2b55);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-card-header h3 {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .ai-card-body { padding: 16px 18px; }
+
+        .ai-action-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        .ai-action-btn:hover { transform: translateY(-1px); }
+
+        .btn-summary { background: linear-gradient(135deg, #10b981, #34d399); color: #fff; }
+        .btn-mindmap { background: linear-gradient(135deg, #6c5ce7, #8b5cf6); color: #fff; }
+
+        .ai-result {
+            background: #f8f7ff;
+            border: 1px solid #ede9fe;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .ai-result.muted { color: #9ca3af; font-style: italic; }
+
+        /* Chat */
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .chat-bubble {
+            padding: 9px 13px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            max-width: 92%;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble.user {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.ai {
+            background: #f3f4f6;
+            color: #1f2937;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-bubble.thinking {
+            background: #f3f4f6;
+            color: #9ca3af;
+            font-style: italic;
+            align-self: flex-start;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+        .chat-input-row input:focus { border-color: #2563eb; }
+
+        .chat-send-btn {
+            padding: 9px 14px;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chat-send-btn:hover { opacity: 0.9; }
+
+        /* Top nav */
+        .note-nav {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .note-nav-left { display: flex; align-items: center; gap: 16px; }
+
+        .note-nav h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563eb, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .back-link:hover { background: #f3f4f6; color: #374151; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @media (max-width: 900px) {
+            .workspace { grid-template-columns: 1fr; padding: 0 16px 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="note-nav">
+        <div class="note-nav-left">
+            <h1>📝 NoteHub</h1>
+            <a href="/notes" class="back-link">← Back to Notes</a>
+        </div>
+    </nav>
+
+    <div class="workspace">
+
+        <!-- LEFT: Editor -->
+        <div class="editor-panel">
+            <h1>✏️ <%= note.title %></h1>
+
+            <form action="/update-note/<%= note._id %>" method="POST">
+                <div id="editor"></div>
+                <input type="hidden" name="content" id="hiddenContent">
+                <button type="submit" class="save-btn">💾 Save Changes</button>
+            </form>
+
+            <!-- Editable Tags -->
+            <div class="tags-section">
+                <h3>🏷️ Tags</h3>
+                <div class="tags-row" id="tags-container">
+                    <% note.tags.forEach(tag => { %>
+                        <span class="tag-chip" data-tag="<%= tag %>">
+                            #<%= tag %>
+                            <button class="remove-tag" onclick="removeTag('<%= tag %>')">×</button>
+                        </span>
+                    <% }) %>
+                    <% if(note.tags.length === 0) { %>
+                        <span id="no-tags-msg" style="color:#9ca3af;font-size:13px;">No tags yet — add some or generate with AI</span>
+                    <% } %>
+                </div>
+                <div class="tag-input-row">
+                    <input type="text" id="new-tag-input" placeholder="Add a tag and press Enter..."
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();addTag();}">
+                    <button class="tag-btn tag-btn-add" onclick="addTag()">+ Add</button>
+                    <button class="tag-btn tag-btn-ai" onclick="generateTags('<%= note._id %>')">✨ AI Tags</button>
+                    <button class="tag-btn tag-btn-save" onclick="saveTags('<%= note._id %>')">💾 Save Tags</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: AI Panel -->
+        <div class="ai-panel">
+
+            <!-- Summary -->
+            <div class="ai-card">
+                <div class="ai-card-header">
+                    <span>📄</span>
+                    <h3>AI Summary</h3>
+                </div>
+                <div class="ai-card-body">
+                    <button class="ai-action-btn btn-summary" onclick="generateSummary('<%= note._id %>')">
+                        ⚡ Generate Summary
+                    </button>
+                    <div id="summary-box">
+                        <% if(note.summary){ %>
+                            <div class="ai-result"><%= note.summary %></div>
+                        <% } else { %>
+                            <div class="ai-result muted">Summary not generated yet</div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mind Map -->
+            <div class="ai-card">
+                <div class="ai-card-header">
+                    <span>🧠</span>
+                    <h3>Mind Map</h3>
+                </div>
+                <div class="ai-card-body">
+                    <button class="ai-action-btn btn-mindmap" onclick="generateMindMap('<%= note._id %>')">
+                        🗺️ Generate Mind Map
+                    </button>
+                    <div id="mindmap-box">
+                        <div class="ai-result muted">Mind map will appear here</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Chat -->
+            <div class="ai-card">
+                <div class="ai-card-header">
+                    <span>💬</span>
+                    <h3>Chat About This Note</h3>
+                </div>
+                <div class="ai-card-body">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-bubble ai">
+                            👋 Hi! I've read your note. Ask me anything about it!
+                        </div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input"
+                            placeholder="Ask something about this note..."
+                            onkeydown="if(event.key==='Enter') sendChat('<%= note._id %>')">
+                        <button class="chat-send-btn" onclick="sendChat('<%= note._id %>')">Send</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.min.js"></script>
+    <script>
+
+        // Quill editor
+        const quill = new Quill('#editor', { theme: 'snow' });
+        quill.root.innerHTML = `<%- note.content %>`;
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('hiddenContent').value = quill.root.innerHTML;
+        });
+
+        // ── Tags ────────────────────────────────────────────
+        let currentTags = <%- JSON.stringify(note.tags) %>;
+
+        function renderTags() {
+            const container = document.getElementById('tags-container');
+            container.innerHTML = '';
+            if (currentTags.length === 0) {
+                const msg = document.createElement('span');
+                msg.style.cssText = 'color:#9ca3af;font-size:13px;';
+                msg.textContent = 'No tags yet — add some or generate with AI';
+                container.appendChild(msg);
+            } else {
+                currentTags.forEach(tag => {
+                    const chip = document.createElement('span');
+                    chip.className = 'tag-chip';
+                    chip.innerHTML = `#${tag} <button class="remove-tag" onclick="removeTag('${tag}')">×</button>`;
+                    container.appendChild(chip);
+                });
+            }
+        }
+
+        function addTag() {
+            const input = document.getElementById('new-tag-input');
+            const val = input.value.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            if (!val || currentTags.includes(val)) { input.value = ''; return; }
+            currentTags.push(val);
+            renderTags();
+            input.value = '';
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            renderTags();
+        }
+
+        async function saveTags(noteId) {
+            try {
+                const res = await fetch(`/notes/${noteId}/save-tags`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tags: currentTags })
+                });
+                const data = await res.json();
+                if (data.success) showToast('✅ Tags saved!', 'success');
+                else showToast('Failed to save tags', 'error');
+            } catch (err) {
+                showToast('Error saving tags', 'error');
+            }
+        }
+
+        async function generateTags(noteId) {
+            const btn = document.querySelector('.tag-btn-ai');
+            btn.textContent = '⏳ Generating...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/notes/${noteId}/tags`, { method: 'POST' });
+                const data = await res.json();
+                if (data.tags) {
+                    currentTags = data.tags;
+                    renderTags();
+                    showToast(' AI tags ready! Click "Save Tags" to keep them.', 'success');
+                } else {
+                    showToast('Could not generate tags', 'error');
+                }
+            } catch (err) {
+                showToast('Tag generation failed', 'error');
+            }
+            btn.textContent = '✨ AI Tags';
+            btn.disabled = false;
+        }
+
+        // ── Summary ─────────────────────────────────────────
+        async function generateSummary(noteId) {
+            const box = document.getElementById('summary-box');
+            box.innerHTML = '<div class="ai-result muted">⏳ Generating summary...</div>';
+            try {
+                const res = await fetch(`/notes/${noteId}/summarize`, { method: 'POST' });
+                const data = await res.json();
+                box.innerHTML = data.summary
+                    ? `<div class="ai-result">${data.summary}</div>`
+                    : '<div class="ai-result muted">Could not generate summary</div>';
+            } catch (err) {
+                box.innerHTML = '<div class="ai-result muted">Something went wrong</div>';
+            }
+        }
+
+        // ── Mind Map ────────────────────────────────────────
+        async function generateMindMap(noteId) {
+            const box = document.getElementById('mindmap-box');
+            box.innerHTML = '<div class="ai-result muted">⏳ Generating mind map...</div>';
+            try {
+                const res = await fetch(`/generate-mindmap/${noteId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.error) { box.innerHTML = `<div class="ai-result muted">Error: ${data.error}</div>`; return; }
+                box.innerHTML = '';
+                drawMindMap(data, box);
+            } catch (err) {
+                box.innerHTML = '<div class="ai-result muted">Something went wrong</div>';
+            }
+        }
+
+        function drawMindMap(data, container) {
+            const W = 680, H = 480, cx = W/2, cy = H/2;
+            const colors = ['#7c6fcd','#9b59b6','#6c5ce7','#a29bfe','#8e44ad','#5f27cd'];
+            d3.select(container).select('svg').remove();
+            const svg = d3.select(container).append('svg')
+                .attr('viewBox', `0 0 ${W} ${H}`).attr('width','100%')
+                .style('background','linear-gradient(135deg,#1e1e3f,#2d2b55)')
+                .style('border-radius','12px').style('display','block');
+            const branches = data.branches;
+            const aStep = (2*Math.PI)/branches.length;
+            const brR = Math.min(W,H)*0.28, subR = Math.min(W,H)*0.17;
+            branches.forEach((b,i) => {
+                const a = i*aStep - Math.PI/2, bx = cx+brR*Math.cos(a), by = cy+brR*Math.sin(a), c = colors[i%colors.length];
+                svg.append('line').attr('x1',cx).attr('y1',cy).attr('x2',bx).attr('y2',by).attr('stroke',c).attr('stroke-width',2).attr('stroke-opacity',0.7);
+                svg.append('circle').attr('cx',bx).attr('cy',by).attr('r',38).attr('fill',c).attr('opacity',0.95);
+                svg.append('text').attr('x',bx).attr('y',by).attr('text-anchor','middle').attr('dominant-baseline','middle')
+                    .attr('fill','white').attr('font-size','9.5px').attr('font-weight','bold').attr('font-family','sans-serif')
+                    .text(b.topic.length>12?b.topic.slice(0,12)+'…':b.topic);
+                b.subtopics.forEach((s,j)=>{
+                    const sa=a+(j-(b.subtopics.length-1)/2)*0.5, sx=bx+subR*Math.cos(sa), sy=by+subR*Math.sin(sa);
+                    svg.append('line').attr('x1',bx).attr('y1',by).attr('x2',sx).attr('y2',sy).attr('stroke',c).attr('stroke-width',1.5).attr('stroke-opacity',0.5);
+                    svg.append('rect').attr('x',sx-38).attr('y',sy-12).attr('width',76).attr('height',24).attr('rx',12).attr('fill','#2d2b55').attr('stroke',c).attr('stroke-width',1.5);
+                    svg.append('text').attr('x',sx).attr('y',sy).attr('text-anchor','middle').attr('dominant-baseline','middle')
+                        .attr('fill','#a29bfe').attr('font-size','8.5px').attr('font-weight','600').attr('font-family','sans-serif')
+                        .text(s.length>12?s.slice(0,12)+'…':s);
+                });
+            });
+            svg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',54).attr('fill','#6c5ce7');
+            svg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',54).attr('fill','none').attr('stroke','white').attr('stroke-width',2).attr('stroke-opacity',0.2);
+            svg.append('text').attr('x',cx).attr('y',cy).attr('text-anchor','middle').attr('dominant-baseline','middle')
+                .attr('fill','white').attr('font-size','10.5px').attr('font-weight','bold').attr('font-family','sans-serif')
+                .text(data.central.length>14?data.central.slice(0,14)+'…':data.central);
+        }
+
+        // ── Chat ────────────────────────────────────────────
+        let chatHistory = [];
+
+        async function sendChat(noteId) {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+            appendBubble(msg, 'user');
+            const thinking = appendBubble('Thinking...', 'thinking');
+            try {
+                const res = await fetch(`/notes/${noteId}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, history: chatHistory })
+                });
+                const data = await res.json();
+                thinking.remove();
+                const reply = data.reply || 'Sorry, something went wrong.';
+                appendBubble(reply, 'ai');
+                chatHistory.push({ role: 'user', content: msg });
+                chatHistory.push({ role: 'assistant', content: reply });
+                if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+            } catch (err) {
+                thinking.remove();
+                appendBubble('Failed to connect. Try again.', 'ai');
+            }
+        }
+
+        function appendBubble(text, type) {
+            const box = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `chat-bubble ${type}`;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            return div;
+        }
+
+        // ── Toast ────────────────────────────────────────────
+        function showToast(msg, type) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.style.background = type === 'success' ? '#d1fae5' : '#fee2e2';
+            t.style.color = type === 'success' ? '#065f46' : '#991b1b';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - NoteHub</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .login-container {
+      max-width: 450px;
+      margin: 80px auto;
+      background: var(--white);
+      padding: 50px 40px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-xl);
+      text-align: center;
+    }
+
+    .login-header {
+      margin-bottom: 40px;
+    }
+
+    .login-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .login-header h1 {
+      color: var(--dark);
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .login-header p {
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    .login-form {
+      text-align: left;
+    }
+
+    .alert-warning {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Minimal Navigation -->
+  <nav>
+    <div class="nav-container">
+      <h1>📝 NoteHub</h1>
+      <div class="nav-links">
+        <a href="/">🏠 Back to Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Login Container -->
+  <div class="login-container">
+    <div class="login-header">
+      <div class="login-icon">🔐</div>
+      <h1>Admin Access</h1>
+      <p>Enter your credentials to access the admin panel</p>
+    </div>
+
+    <!-- Security Alert -->
+    <div class="alert-warning">
+      <span>⚠️</span>
+      <span>This area is restricted to authorized administrators only</span>
+    </div>
+
+    <!-- Login Form -->
+    <form action="/admin/login" method="POST" class="login-form">
+      <div class="form-group">
+        <label for="username">👤 Username</label>
+        <input 
+          type="text" 
+          id="username"
+          name="username" 
+          placeholder="Enter your username" 
+          required 
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">🔒 Password</label>
+        <input 
+          type="password" 
+          id="password"
+          name="password" 
+          placeholder="Enter your password" 
+          required 
+          autocomplete="current-password"
+        />
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; font-size: 14px; color: var(--gray); cursor: pointer;">
+          <input type="checkbox" name="remember" style="width: auto; margin: 0;">
+          Remember me for 30 days
+        </label>
+      </div>
+
+      <button type="submit" style="width: 100%; justify-content: center;">
+        🔓 Login to Admin Panel
+      </button>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="#" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 500;">
+          Forgot your password?
+        </a>
+      </div>
+    </form>
+
+    <!-- Security Info -->
+    <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--light-gray);">
+      <div style="display: flex; justify-content: center; gap: 30px; color: var(--gray); font-size: 13px;">
+        <div style="text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 8px;">🔒</div>
+          <div>Encrypted</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 8px;">🛡️</div>
+          <div>Secure</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 8px;">✅</div>
+          <div>Protected</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 NoteHub. Built with ❤️ using Node.js, Express, and MongoDB</p>
+  </footer>
+</body>
+</html>
