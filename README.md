@@ -32,24 +32,24 @@
 ## Tech Stack
 
 ### Backend
-- **Node.js** — JavaScript runtime
-- **Express.js** — Web framework
-- **MongoDB Atlas** — Cloud NoSQL database
-- **Mongoose** — ODM for MongoDB
-- **bcrypt** — Password hashing
-- **express-session** — Session management
-- **dotenv** — Environment variable management
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web framework
+- **MongoDB Atlas** - Cloud NoSQL database
+- **Mongoose** - ODM for MongoDB
+- **bcrypt** - Password hashing
+- **express-session** - Session management
+- **dotenv** - Environment variable management
 
 ### Frontend
-- **EJS** — Server-side templating
-- **Quill.js** — Rich text editor
-- **D3.js** — Interactive SVG mind map visualization
-- **CSS Grid** — Two-column responsive layout
+- **EJS** - Server-side templating
+- **Quill.js** - Rich text editor
+- **D3.js** - Interactive SVG mind map visualization
+- **CSS Grid** - Two-column responsive layout
 
 ### AI & NLP
-- **Groq API** — LLaMA 3.3 70B for mind maps, tags, and chat
-- **Hugging Face API** — BART-large-CNN for summarization
-- **natural.js** — Local TF-IDF keyword extraction (offline fallback)
+- **Groq API** - LLaMA 3.3 70B for mind maps, tags, and chat
+- **Hugging Face API** - BART-large-CNN for summarization
+- **natural.js** - Local TF-IDF keyword extraction (offline fallback)
 
 ---
 
